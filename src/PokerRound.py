@@ -48,12 +48,8 @@ class PokerRound:
 
     def rotate_blinds(self):
 
-        previous_little_blind_player = self.players[self.index_little_blind]
-        previous_big_blind_player = self.players[self.index_big_blind]
-
-        previous_little_blind_player.reset_blind_status()
-        previous_big_blind_player.reset_blind_status()
-
+        # Resetting the blind status for the players.
+        self.reset_blind()
         # Getting the last player index in the players list.
         last_player_index = len(self.players) - 1
 
@@ -71,18 +67,46 @@ class PokerRound:
             self.index_little_blind += 1
             self.index_big_blind += 1
 
+        # Updating the players big and little blind status.
         current_little_blind_player = self.players[self.index_little_blind]
         current_big_blind_player = self.players[self.index_big_blind]
 
         current_little_blind_player.assign_little_blind()
         current_big_blind_player.assign_big_blind()
 
+    def reset_blind(self):
+        previous_little_blind_player = self.players[self.index_little_blind]
+        previous_big_blind_player = self.players[self.index_big_blind]
 
-
+        previous_little_blind_player.reset_blind_status()
+        previous_big_blind_player.reset_blind_status()
 
 
 def main():
-    pass
+    players = [Player("Alice", 1000), Player("Bob", 1000),
+               Player("Charlie", 1000), Player("Diana", 1000)]
+    poker_round = PokerRound(players, 100, 50, 1000)
+
+    # Check status of the players
+
+    for player in players:
+        print("Name:", player.name, "Little Blind Status:", player.little_blind_status,
+              "Big Blind Status:", player.big_blind_status)
+
+    print("-------------------------")
+
+    poker_round.deal_cards()
+
+    for player in players:
+        print("Name:", player.name)
+        for card in player.hand:
+            print("Card Number:", card.number, "Card Suit:", card.suit)
+    print("-------------------------")
+
+    for card in poker_round.deck_of_cards:
+        print("Card Number:", card.number, "Card Suit:", card.suit)
+
+    print(len(poker_round.deck_of_cards))
 
 
 if __name__ == "__main__":
