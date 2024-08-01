@@ -1,19 +1,19 @@
 import unittest
 
 from src.Player import Player
-from src.PokerRound import PokerRound
+from src.PokerGame import PokerGame
 
 
 class TestPokerRound(unittest.TestCase):
     def setUp(self):
         self.players_size_4 = [Player("Alice", 1000), Player("Bob", 1000),
                                Player("Charlie", 1000), Player("Diana", 1000)]
-        self.poker_round_size_4 = PokerRound(self.players_size_4, 100, 50, 1000)
+        self.poker_round_size_4 = PokerGame(self.players_size_4, 100, 50, 1000)
 
         self.players_size_3 = [Player("Alice", 1000), Player("Bob", 1000),
                                Player("Charlie", 1000)]
 
-        self.poker_round_size_3 = PokerRound(self.players_size_3, 100, 50, 1000)
+        self.poker_round_size_3 = PokerGame(self.players_size_3, 100, 50, 1000)
 
     def assert_blinds(self, poker_round, expected_little_blind, expected_big_blind):
         self.assertEqual(poker_round.index_little_blind, expected_little_blind)
