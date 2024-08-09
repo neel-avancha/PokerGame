@@ -1,8 +1,7 @@
 from typing import List
 
-from src.enum.Suit import Suit
-from src.Card import Card
-from src.Player import Player
+from src.model.Card import Card
+from src.model.Player import Player
 import random
 
 
@@ -31,18 +30,11 @@ class PokerGame:
         self.big_blind = big_blind_amount
         self.little_blind = little_blind_amount
         self.min_buy_in = min_buy_in
-        self.deck_of_cards = create_deck()
         self.index_little_blind = 0
         self.index_big_blind = 1
         self.current_pot = 0
         self.current_bet = 0
         self.assign_blinds()
-
-    def deal_cards(self):
-        for player in self.players:
-            card_1 = self.deck_of_cards.pop(0)
-            card_2 = self.deck_of_cards.pop(0)
-            player.assign_hand([card_1, card_2])
 
     def assign_blinds(self):
         player1 = self.players[self.index_little_blind]

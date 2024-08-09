@@ -1,7 +1,7 @@
 import unittest
 
-from src.RankHand import RankHand
-from src.Card import Card
+from src.model.Dealer import RankHand
+from src.model.Card import Card
 
 
 class testRankHand(unittest.TestCase):

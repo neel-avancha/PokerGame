@@ -1,7 +1,7 @@
 import unittest
 
-from src.Player import Player
-from src.PokerGame import PokerGame
+from src.model.Player import Player
+from src.model.PokerGame import PokerGame
 
 
 class TestPokerRound(unittest.TestCase):

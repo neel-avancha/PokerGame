@@ -1,7 +1,3 @@
-from src.enum.Suit import Suit
-from src.Card import Card
-
-
 class Player:
     def __init__(self, name, total_amount):
         self.name = name
@@ -31,8 +27,6 @@ class Player:
         self.total_amount -= amount
         self.round_bet_amount += amount
         return amount
-
-
 
     def fold_hand(self):
         self.fold = True
