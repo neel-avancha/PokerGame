@@ -129,13 +129,62 @@ class RankHand:
         result_pairs = {
             "QUADS": counts[4] == 1,
             "FULL_HOUSE": counts[3] == 1 and counts[2] == 1,
-            "TRIPS": counts[3] == 1 and counts[2] != 1,  # Ensure not full house
-            "TWO_PAIR": counts[2] == 2,
+            "TRIPS": counts[3] >= 1 and counts[2] != 1,  # Ensure not full house
+            "TWO_PAIR": counts[2] >= 2,
             "ONE_PAIR": counts[2] == 1 and counts[3] == 0  # Ensure not full house or trips
         }
 
         for hand, true_value in result_pairs.items():
             if true_value:
-                return hand
+
 
         return None
+
+
+    def __fill_max(self, rank_counts, value_to_find):
+        """
+        Helper function designed to return the n highest cards to fill for the best five cards.
+        :return: The highest rest of cards to fill.
+        """
+        final_cards_numbers = self.__return_highest_tier_cards(rank_counts, value_to_find)
+
+        num_cards_to_fill = 5 - len(final_cards_numbers)
+
+        hand_numbers_only = [card.number for card in self.hand]
+
+        cards_remaining = [card_number for card_number in hand_numbers_only if card_number not in final_cards_numbers]
+
+        cards_remaining.sort(reverse=True)
+
+        highest_remaining_to_add = cards_remaining[:num_cards_to_fill]
+
+        best_five_cards = final_cards_numbers + highest_remaining_to_add
+
+        return best_five_cards
+
+
+
+
+    def __return_highest_tier_cards(self, rank_counts, value_to_find):
+        """
+        Helper function designed to return the best cards for the tier.
+        e.g: Returning the highest number one-pair, two-pair, trips, etc.
+
+        :param rank_counts: Dictionary where the key is the number and the value is how
+        many times it occurs.
+        :param value_to_find: A value to look for within rank_counts
+        :return: A List containing the highest-tier cards -
+        [5,5] Highest one-pair
+        [9,9,9,9] Highest Quads
+        """
+
+        dict_rank_counts = dict(rank_counts)
+
+        card_numbers = [number for number, occurrence in dict_rank_counts.items() if occurrence == value_to_find]
+
+        card_numbers.sort(reverse=True)
+
+        card = card_numbers[0]
+
+        return [card for _ in range(value_to_find)]
+
