@@ -4,7 +4,7 @@ from src.model.Dealer import RankHand
 from src.model.Card import Card
 
 
-class testRankHand(unittest.TestCase):
+class TestRankHand(unittest.TestCase):
 
     def setUp(self):
         self.one_pair = [Card("CLUB", 8), Card("CLUB", 7), Card("HEART", 11),

@@ -42,13 +42,15 @@ class Dealer:
     # responsibility
 
     def deal_flop(self):
-        burn_card = self.deck_of_cards.pop(0)
+        # Burn a card
+        self.deck_of_cards.pop(0)
         for i in range(3):
             card = self.deck_of_cards.pop(0)
             self.river.append(card)
 
     def deal_next_river_card(self):
-        burn_card = self.deck_of_cards.pop(0)
+        # Burn a card
+        self.deck_of_cards.pop(0)
         card = self.deck_of_cards.pop(0)
         self.river.append(card)
 
@@ -76,10 +78,42 @@ class RankHand:
         pass
 
     def check_flush(self):
-        pass
+        suit_only = [card.suit for card in self.hand]
+
+        suit_occurrences = Counter(suit_only)
+
+        for count in suit_occurrences.values():
+            if count >= 5:
+                return True
+
+        return False
 
     def check_straight(self):
-        pass
+        number_only = [card.number for card in self.hand]
+
+        number_only.sort()
+
+        prev_number = 0
+        consecutive_numbers = 0
+        for current_number in number_only:
+            if consecutive_numbers >= 4:
+                break
+            if prev_number == 0:
+                prev_number = current_number
+            else:
+                if prev_number + 1 == current_number:
+                    consecutive_numbers += 1
+                elif prev_number == current_number:
+                    consecutive_numbers = consecutive_numbers
+                else:
+                    consecutive_numbers = 0
+
+                prev_number = current_number
+
+        if consecutive_numbers >= 4:
+            return True
+        else:
+            return False
 
     def check_pair(self):
 
