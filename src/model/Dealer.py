@@ -72,13 +72,29 @@ class RankHand:
         pass
 
     def check_royal_flush(self):
-        pass
+        valid_royal_flush_card_nums = [10,11,12,13,14]
+
+        flush_status = self.check_flush()[0]
+
+        if not flush_status:
+            return False, []
+
+        potential_royal_flush = []
+        for card in self.hand:
+            if card.number in valid_royal_flush_card_nums and all(card.number != c.number for c in potential_royal_flush):
+                potential_royal_flush.append(card)
+
+        if len(potential_royal_flush) == 5:
+            return "ROYAL_FLUSH", potential_royal_flush
+        else:
+            return False, []
+        
 
     def check_straight_flush(self):
         straight_result, straight_best_five = self.check_straight()
         flush_result, flush_best_five = self.check_flush()
 
-        
+
 
     def check_flush(self):
         suit_only = [card.suit for card in self.hand]
@@ -88,7 +104,7 @@ class RankHand:
         flush_suit_list = [num for num, count in counter_suit.items() if count >= 5]
 
         if len(flush_suit_list) == 0:
-            return False
+            return False, []
         else:
             flush_suit = flush_suit_list[0]
 
@@ -122,7 +138,7 @@ class RankHand:
                 best_five_cards.sort(key=lambda card: card.number, reverse=True)
                 return "STRAIGHT", best_five_cards
 
-        return False
+        return False, []
 
     def check_pair(self):
         hand_numbers_only = [card.number for card in self.hand]
