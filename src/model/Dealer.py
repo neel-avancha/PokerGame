@@ -75,45 +75,54 @@ class RankHand:
         pass
 
     def check_straight_flush(self):
-        pass
+        straight_result, straight_best_five = self.check_straight()
+        flush_result, flush_best_five = self.check_flush()
+
+        
 
     def check_flush(self):
         suit_only = [card.suit for card in self.hand]
 
-        suit_occurrences = Counter(suit_only)
+        counter_suit = Counter(suit_only)
 
-        for count in suit_occurrences.values():
-            if count >= 5:
-                return True
+        flush_suit_list = [num for num, count in counter_suit.items() if count >= 5]
 
-        return False
+        if len(flush_suit_list) == 0:
+            return False
+        else:
+            flush_suit = flush_suit_list[0]
+
+            best_hand = sorted([card for card in self.hand if card.suit == flush_suit],
+                               key=lambda card: card.number, reverse=True)[:5]
+
+            return "FLUSH", best_hand
 
     def check_straight(self):
-        number_only = [card.number for card in self.hand]
+        # Extract card numbers and remove duplicates
+        card_numbers = sorted(set(card.number for card in self.hand), reverse=True)
 
-        number_only.sort()
+        # Create a special case handling for Ace-low straight (A, 2, 3, 4, 5)
+        if 14 in card_numbers:
+            card_numbers.append(1)  # Add Ace as 1 for checking low straight
 
-        prev_number = 0
-        consecutive_numbers = 0
-        for current_number in number_only:
-            if consecutive_numbers >= 4:
-                break
-            if prev_number == 0:
-                prev_number = current_number
-            else:
-                if prev_number + 1 == current_number:
-                    consecutive_numbers += 1
-                elif prev_number == current_number:
-                    consecutive_numbers = consecutive_numbers
-                else:
-                    consecutive_numbers = 0
+        # Check for a straight by slicing the sorted list
+        for i in range(len(card_numbers) - 4):
+            potential_straight = card_numbers[i:i + 5]
+            if potential_straight[0] - potential_straight[-1] == 4:
+                # Handle Ace-low case by placing Ace (14) at the end if it exists as 1
+                if 1 in potential_straight:
+                    potential_straight.remove(1)
+                    potential_straight.append(14)
 
-                prev_number = current_number
+                best_five_cards = []
+                for card in self.hand:
+                    if card.number in potential_straight and all(card.number != c.number for c in best_five_cards):
+                        best_five_cards.append(card)
 
-        if consecutive_numbers >= 4:
-            return True
-        else:
-            return False
+                best_five_cards.sort(key=lambda card: card.number, reverse=True)
+                return "STRAIGHT", best_five_cards
+
+        return False
 
     def check_pair(self):
         hand_numbers_only = [card.number for card in self.hand]
@@ -146,7 +155,6 @@ class RankHand:
         # If no pairs, trips, or quads found, return the 5 highest cards
 
     def __match_value(self, hand_tier, rank_counts, counts):
-        best_hand = []
         match hand_tier:
             case "QUADS":
                 return "QUADS", self.__best_five_helper(4, rank_counts)
@@ -195,4 +203,3 @@ class RankHand:
             return sorted([num for num, count in rank_counts.items() if count == count_number], reverse=True)[:2]
         else:
             return [max([num for num, count in rank_counts.items() if count == count_number])]
-
