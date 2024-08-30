@@ -9,7 +9,7 @@ import random
 def create_deck():
     deck_of_cards = []
     list_of_suits = ["DIAMOND", "CLUB", "SPADE", "HEART"]
-    for i in range(1, 14):
+    for i in range(2, 15):
         for suit in list_of_suits:
             card = Card(suit, i)
             deck_of_cards.append(card)
@@ -183,9 +183,33 @@ class RankHand:
         else:
             hand_tier = "HIGH_CARD"
 
+            high_cards = sorted(self.hand, key=lambda card: card.number, reverse=True)[:5]
+            return "HIGH_CARD", high_cards
+
         return hand_tier, sorted(best_hand, key=lambda card: card.number, reverse=True)
 
         # If no pairs, trips, or quads found, return the 5 highest cards
+
+
+    def __match_value(self, hand_tier):
+        match value:
+            case "QUADS":
+
+            case "FULL_HOUSE":
+
+            case "TRIPS":
+
+            case "TWO_PAIR":
+
+            case "ONE_PAIR":
+
+            case _:
+                hand_tier = "HIGH_CARD"
+                high_cards = sorted(self.hand, key=lambda card: card.number, reverse=True)[:5]
+                return "HIGH_CARD", high_cards
+
+    def __best_five_helper(self, count_number, rank_counts):
+        
 
     def __fill_max(self, rank_counts, value_to_find):
         """
