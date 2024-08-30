@@ -134,123 +134,65 @@ class RankHand:
             "ONE_PAIR": counts[2] == 1 and counts[3] == 0  # Ensure not full house or trips
         }
 
-        best_hand = []
-        hand_tier = [tier for tier, bool_val in result_pairs.items() if bool_val][0]
+        hand_tier_list = [tier for tier, bool_val in result_pairs.items() if bool_val]
 
-        if hand_tier == "QUADS":
-            quad_number = [num for num, count in rank_counts.items() if count == 4][0]
-            best_hand = [card for card in self.hand if card.number == quad_number]
-            kicker = max([card for card in self.hand if card.number != quad_number],
-                         key=lambda card: card.number)
-            best_hand += [kicker]
-        elif hand_tier == "FULL_HOUSE":
-            trip_number = 0
-            pair_number = 0
-            if counts[3] == 1 and counts[2] == 1:
-                trip_number = [num for num, count in rank_counts.items() if count == 3][0]
-                pair_number = [num for num, count in rank_counts.items() if count == 2][0]
-            elif counts[3] == 2:
-                sorted_trips_list = sorted([num for num, count in rank_counts.items() if count == 3], reverse=True)
-                trip_number = sorted_trips_list[0]
-                pair_number = sorted_trips_list[1]
-            elif counts[3] == 1 and counts[2] == 2:
-                trip_number = [num for num, count in rank_counts.items() if count == 3][0]
-                pair_number = sorted([num for num, count in rank_counts.items() if count == 2], reverse=True)[0]
-
-            best_hand = [card for card in self.hand if card.number == trip_number][:3]
-            best_hand += [card for card in self.hand if card.number == pair_number][:2]
-
-        elif hand_tier == "TRIPS":
-            trip_number = [num for num, count in rank_counts.items() if count == 3][0]
-            best_hand = [card for card in self.hand if card.number == trip_number][:3]
-            kickers = sorted([card for card in self.hand if card.number != trip_number],
-                             key=lambda card: card.number, reverse=True)[:2]
-            best_hand += kickers
-        elif hand_tier == "TWO_PAIR":
-            pair_numbers = sorted([num for num, count in rank_counts.items() if count == 2], reverse=True)[
-                           :2]
-            best_hand = [card for card in self.hand if card.number in pair_numbers]
-            kicker = max([card for card in self.hand if card.number not in pair_numbers],
-                         key=lambda card: card.number)
-            best_hand += [kicker]
-        elif hand_tier == "ONE_PAIR":
-            pair_number = [num for num, count in rank_counts.items() if count == 2][0]
-            best_hand = [card for card in self.hand if card.number == pair_number][:2]
-            kickers = sorted([card for card in self.hand if card.number != pair_number],
-                             key=lambda card: card.number, reverse=True)[:3]
-            best_hand += kickers
-
-        else:
+        if len(hand_tier_list) == 0:
             hand_tier = "HIGH_CARD"
+        else:
+            hand_tier = hand_tier_list[0]
 
-            high_cards = sorted(self.hand, key=lambda card: card.number, reverse=True)[:5]
-            return "HIGH_CARD", high_cards
-
-        return hand_tier, sorted(best_hand, key=lambda card: card.number, reverse=True)
+        return self.__match_value(hand_tier=hand_tier, rank_counts=rank_counts, counts=counts)
 
         # If no pairs, trips, or quads found, return the 5 highest cards
 
-
-    def __match_value(self, hand_tier):
-        match value:
+    def __match_value(self, hand_tier, rank_counts, counts):
+        best_hand = []
+        match hand_tier:
             case "QUADS":
-
+                return "QUADS", self.__best_five_helper(4, rank_counts)
             case "FULL_HOUSE":
+                trip_number = []
+                pair_number = []
+                if counts[3] == 1 and counts[2] == 1:
+                    trip_number = self.__get_tier_numbers(3, rank_counts)
+                    pair_number = self.__get_tier_numbers(2, rank_counts)
+                elif counts[3] == 2:
+                    trip_number_int, pair_number_int = self.__get_tier_numbers(3, rank_counts, top_two=True)
+                    trip_number = [trip_number_int]
+                    pair_number = [pair_number_int]
+                elif counts[3] == 1 and counts[2] == 2:
+                    trip_number = self.__get_tier_numbers(3, rank_counts)
+                    pair_number = self.__get_tier_numbers(2, rank_counts)
 
+                best_hand = [card for card in self.hand if card.number in trip_number][:3]
+                best_hand += [card for card in self.hand if card.number in pair_number][:2]
+
+                return "FULL_HOUSE", best_hand
             case "TRIPS":
-
+                return "TRIPS", self.__best_five_helper(3, rank_counts)
             case "TWO_PAIR":
-
+                return "TWO_PAIR", self.__best_five_helper(2, rank_counts, top_two=True)
             case "ONE_PAIR":
-
-            case _:
-                hand_tier = "HIGH_CARD"
+                return "ONE_PAIR", self.__best_five_helper(2, rank_counts)
+            case "HIGH_CARD":
                 high_cards = sorted(self.hand, key=lambda card: card.number, reverse=True)[:5]
                 return "HIGH_CARD", high_cards
 
-    def __best_five_helper(self, count_number, rank_counts):
-        
+    def __best_five_helper(self, count_number, rank_counts, top_two=False):
+        tier_number = self.__get_tier_numbers(count_number, rank_counts, top_two=top_two)
 
-    def __fill_max(self, rank_counts, value_to_find):
-        """
-        Helper function designed to return the n highest cards to fill for the best five cards.
-        :return: The highest rest of cards to fill.
-        """
-        final_cards_numbers = self.__return_highest_tier_cards(rank_counts, value_to_find)
+        best_hand = [card for card in self.hand if card.number in tier_number]
 
-        num_cards_to_fill = 5 - len(final_cards_numbers)
+        num_kickers = 5 - len(best_hand) if not top_two else 1
 
-        hand_numbers_only = [card.number for card in self.hand]
+        kickers = sorted([card for card in self.hand if card.number not in tier_number],
+                         key=lambda card: card.number, reverse=True)[:num_kickers]
+        best_hand += kickers
+        return best_hand
 
-        cards_remaining = [card_number for card_number in hand_numbers_only if card_number not in final_cards_numbers]
+    def __get_tier_numbers(self, count_number, rank_counts, top_two=False):
+        if top_two:
+            return sorted([num for num, count in rank_counts.items() if count == count_number], reverse=True)[:2]
+        else:
+            return [max([num for num, count in rank_counts.items() if count == count_number])]
 
-        cards_remaining.sort(reverse=True)
-
-        highest_remaining_to_add = cards_remaining[:num_cards_to_fill]
-
-        best_five_cards = final_cards_numbers + highest_remaining_to_add
-
-        return best_five_cards
-
-    def __return_highest_tier_cards(self, rank_counts, value_to_find):
-        """
-        Helper function designed to return the best cards for the tier.
-        e.g: Returning the highest number one-pair, two-pair, trips, etc.
-
-        :param rank_counts: Dictionary where the key is the number and the value is how
-        many times it occurs.
-        :param value_to_find: A value to look for within rank_counts
-        :return: A List containing the highest-tier cards -
-        [5,5] Highest one-pair
-        [9,9,9,9] Highest Quads
-        """
-
-        dict_rank_counts = dict(rank_counts)
-
-        card_numbers = [number for number, occurrence in dict_rank_counts.items() if occurrence == value_to_find]
-
-        card_numbers.sort(reverse=True)
-
-        card = card_numbers[0]
-
-        return [card for _ in range(value_to_find)]
