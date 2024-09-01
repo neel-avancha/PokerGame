@@ -216,11 +216,6 @@ class RankHand:
         if sequence_cards is None:
             return False, []
 
-        sequence_cards = list(set(sequence_cards))
-
-        if len(sequence_cards) < 5:
-            return False, []
-
         best_hand = sequence_cards[:5]
 
         return "STRAIGHT", best_hand
