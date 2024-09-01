@@ -57,8 +57,17 @@ class Dealer:
 
 class RankHand:
     # The higher the index, the better value the hand holds.
-    poker_rankings = ["HIGH_CARD", "ONE_PAIR", "TWO_PAIR", "TRIPS", "STRAIGHT",
-                      "FLUSH", "FULL_HOUSE", "QUADS", "STRAIGHT_FLUSH", "ROYAL_FLUSH"]
+    poker_rankings = {
+        "ROYAL_FLUSH": 9,
+        "STRAIGHT_FLUSH": 8,
+        "QUADS": 7,
+        "FLUSH": 6,
+        "STRAIGHT": 5,
+        "TRIPS": 4,
+        "TWO_PAIR": 3,
+        "ONE_PAIR": 2,
+        "HIGH_CARD": 1
+    }
 
     def __init__(self, hand: List[Card]):
 
@@ -69,10 +78,16 @@ class RankHand:
             self.hand = hand
 
     def return_rank_of_hand(self):
-        pass
+        sequence_of_methods = [self.check_royal_flush(), self.check_straight_flush(),
+                               self.check_flush(), self.check_straight(), self.check_pair()]
+
+        for method in sequence_of_methods:
+            tier, best_five = method
+            if tier:
+                return tier, best_five
 
     def check_royal_flush(self):
-        valid_royal_flush_card_nums = [10,11,12,13,14]
+        valid_royal_flush_card_nums = [10, 11, 12, 13, 14]
 
         flush_status = self.check_flush()[0]
 
@@ -81,22 +96,45 @@ class RankHand:
 
         potential_royal_flush = []
         for card in self.hand:
-            if card.number in valid_royal_flush_card_nums and all(card.number != c.number for c in potential_royal_flush):
+            if card.number in valid_royal_flush_card_nums and all(
+                    card.number != c.number for c in potential_royal_flush):
                 potential_royal_flush.append(card)
 
         if len(potential_royal_flush) == 5:
             return "ROYAL_FLUSH", potential_royal_flush
         else:
             return False, []
-        
 
     def check_straight_flush(self):
-        straight_result, straight_best_five = self.check_straight()
-        flush_result, flush_best_five = self.check_flush()
+        flush_suit = self.__check_flush_occurrence()
 
+        if flush_suit is None:
+            return False, []
 
+        flush_cards = self.__return_same_suit(flush_suit=flush_suit)
 
-    def check_flush(self):
+        straight_occurrences = self.__return_sequence_cards()
+
+        if straight_occurrences is None:
+            return False, []
+
+        overlapping_cards = [
+            card for card in straight_occurrences
+            if any(card.number == flush_card.number and card.suit == flush_card.suit for flush_card in flush_cards)
+        ]
+
+        if len(overlapping_cards) < 5:
+            return False, []
+
+        best_five = sorted(overlapping_cards, key=lambda card: card.number, reverse=True)[:5]
+
+        return "STRAIGHT_FLUSH", best_five
+
+    def __return_same_suit(self, flush_suit):
+        return sorted([card for card in self.hand if card.suit == flush_suit],
+                      key=lambda card: card.number, reverse=True)
+
+    def __check_flush_occurrence(self):
         suit_only = [card.suit for card in self.hand]
 
         counter_suit = Counter(suit_only)
@@ -104,16 +142,25 @@ class RankHand:
         flush_suit_list = [num for num, count in counter_suit.items() if count >= 5]
 
         if len(flush_suit_list) == 0:
-            return False, []
+            return None
         else:
             flush_suit = flush_suit_list[0]
+            return flush_suit
 
-            best_hand = sorted([card for card in self.hand if card.suit == flush_suit],
-                               key=lambda card: card.number, reverse=True)[:5]
+    def check_flush(self):
 
-            return "FLUSH", best_hand
+        flush_suit = self.__check_flush_occurrence()
 
-    def check_straight(self):
+        if flush_suit is None:
+            return False, []
+
+        suited_cards = self.__return_same_suit(flush_suit=flush_suit)
+
+        best_hand = suited_cards[:5]
+
+        return "FLUSH", best_hand
+
+    def __return_sequence_cards(self):
         # Extract card numbers and remove duplicates
         card_numbers = sorted(set(card.number for card in self.hand), reverse=True)
 
@@ -121,24 +168,59 @@ class RankHand:
         if 14 in card_numbers:
             card_numbers.append(1)  # Add Ace as 1 for checking low straight
 
-        # Check for a straight by slicing the sorted list
-        for i in range(len(card_numbers) - 4):
-            potential_straight = card_numbers[i:i + 5]
-            if potential_straight[0] - potential_straight[-1] == 4:
-                # Handle Ace-low case by placing Ace (14) at the end if it exists as 1
-                if 1 in potential_straight:
-                    potential_straight.remove(1)
-                    potential_straight.append(14)
+        # Initialize variables to track the longest sequence
+        longest_sequence = []
 
-                best_five_cards = []
-                for card in self.hand:
-                    if card.number in potential_straight and all(card.number != c.number for c in best_five_cards):
-                        best_five_cards.append(card)
+        # Check for any sequence by iterating through the sorted list
+        current_sequence = [card_numbers[0]]
+        for i in range(1, len(card_numbers)):
+            if card_numbers[i] == card_numbers[i - 1] - 1:
+                current_sequence.append(card_numbers[i])
+            else:
+                if len(current_sequence) >= 5:
+                    longest_sequence.extend(current_sequence)
+                current_sequence = [card_numbers[i]]
 
-                best_five_cards.sort(key=lambda card: card.number, reverse=True)
-                return "STRAIGHT", best_five_cards
+        # Add the last sequence if it qualifies
+        if len(current_sequence) >= 5:
+            longest_sequence.extend(current_sequence)
 
-        return False, []
+        # Handle Ace-low case by placing Ace (14) at the end if it exists as 1
+        if 1 in longest_sequence:
+            longest_sequence.remove(1)
+            longest_sequence.append(14)
+
+        if len(longest_sequence) >= 5:
+            sequence_cards = []
+            for card in self.hand:
+                if card.number in longest_sequence and card not in sequence_cards:
+                    sequence_cards.append(card)
+
+            sequence_cards.sort(key=lambda card: card.number, reverse=True)
+
+            first_card = sequence_cards[0]
+            second_card = sequence_cards[1]
+
+            # If the Ace is represented as a 1 instead of a 14, add it to the end of the list when outputting.
+            if first_card.number == 14 and second_card.number != 13:
+                sequence_cards.remove(first_card)
+                sequence_cards.append(first_card)
+
+            return sequence_cards
+
+        return None
+
+    def check_straight(self):
+        sequence_cards = self.__return_sequence_cards()
+
+        sequence_cards = list(set(sequence_cards))
+
+        if sequence_cards is None or len(sequence_cards) < 5:
+            return False, []
+
+        best_hand = sequence_cards[:5]
+
+        return "STRAIGHT", best_hand
 
     def check_pair(self):
         hand_numbers_only = [card.number for card in self.hand]
