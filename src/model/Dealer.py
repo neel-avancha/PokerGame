@@ -78,11 +78,11 @@ class RankHand:
             self.hand = hand
 
     def return_rank_of_hand(self):
-        sequence_of_methods = [self.check_royal_flush(), self.check_straight_flush(),
-                               self.check_flush(), self.check_straight(), self.check_pair()]
+        sequence_of_methods = [self.check_royal_flush, self.check_straight_flush,
+                               self.check_flush, self.check_straight, self.check_pair]
 
         for method in sequence_of_methods:
-            tier, best_five = method
+            tier, best_five = method()
             if tier:
                 return tier, best_five
 
@@ -213,9 +213,12 @@ class RankHand:
     def check_straight(self):
         sequence_cards = self.__return_sequence_cards()
 
+        if sequence_cards is None:
+            return False, []
+
         sequence_cards = list(set(sequence_cards))
 
-        if sequence_cards is None or len(sequence_cards) < 5:
+        if len(sequence_cards) < 5:
             return False, []
 
         best_hand = sequence_cards[:5]
@@ -287,7 +290,8 @@ class RankHand:
     def __best_five_helper(self, count_number, rank_counts, top_two=False):
         tier_number = self.__get_tier_numbers(count_number, rank_counts, top_two=top_two)
 
-        best_hand = [card for card in self.hand if card.number in tier_number]
+        best_hand = sorted([card for card in self.hand if card.number in tier_number],
+                           key=lambda card: card.number, reverse=True)
 
         num_kickers = 5 - len(best_hand) if not top_two else 1
 
