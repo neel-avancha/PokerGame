@@ -157,7 +157,8 @@ class TestRankHand2(unittest.TestCase):
         expected_list = [Card("CLUB", 14), Card("HEART", 13), Card("SPADE", 12),
                          Card("DIAMOND", 11), Card("HEART", 10)]
 
-        self.run_test(hand_of_cards=self.straight_high_ace_repeats, expected_list=expected_list, expected_tier="STRAIGHT")
+        self.run_test(hand_of_cards=self.straight_high_ace_repeats,
+                      expected_list=expected_list, expected_tier="STRAIGHT")
 
     def test_quads(self):
         expected_list = [Card("CLUB", 10), Card("HEART", 10),

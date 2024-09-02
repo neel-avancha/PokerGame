@@ -196,16 +196,6 @@ class RankHand:
                 if card.number in longest_sequence and card not in sequence_cards:
                     sequence_cards.append(card)
 
-            sequence_cards.sort(key=lambda card: card.number, reverse=True)
-
-            first_card = sequence_cards[0]
-            second_card = sequence_cards[1]
-
-            # If the Ace is represented as a 1 instead of a 14, add it to the end of the list when outputting.
-            if first_card.number == 14 and second_card.number != 13:
-                sequence_cards.remove(first_card)
-                sequence_cards.append(first_card)
-
             return sequence_cards
 
         return None
@@ -215,6 +205,28 @@ class RankHand:
 
         if sequence_cards is None:
             return False, []
+
+        card_numbers = [card.number for card in sequence_cards]
+
+        card_numbers_no_dupes = list(set(card_numbers))
+
+        if len(card_numbers_no_dupes) < 5:
+            return False, []
+
+        sequence_cards_no_dupes = []
+        for number in card_numbers_no_dupes:
+            card_to_append = [card for card in sequence_cards if card.number == number][0]
+            sequence_cards_no_dupes.append(card_to_append)
+
+        sequence_cards = sorted(sequence_cards_no_dupes, key=lambda card: card.number, reverse=True)
+
+        first_card = sequence_cards[0]
+        second_card = sequence_cards[1]
+
+        # If the Ace is represented as a 1 instead of a 14, add it to the end of the list when outputting.
+        if first_card.number == 14 and second_card.number != 13:
+            sequence_cards.remove(first_card)
+            sequence_cards.append(first_card)
 
         best_hand = sequence_cards[:5]
 
