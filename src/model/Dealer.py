@@ -48,11 +48,18 @@ class Dealer:
             card = self.deck_of_cards.pop(0)
             self.river.append(card)
 
+        # Allow this to be a class method within the player class (add river)
+        for player in self.current_players:
+            player.hand.append(self.river)
+
     def deal_next_river_card(self):
         # Burn a card
         self.deck_of_cards.pop(0)
         card = self.deck_of_cards.pop(0)
         self.river.append(card)
+
+        for player in self.current_players:
+            player.hand.append(card)
 
 
 class RankHand:

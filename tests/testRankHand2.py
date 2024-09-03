@@ -50,14 +50,55 @@ class TestRankHand2(unittest.TestCase):
                                   Card("DIAMOND", 8), Card("HEART", 2)]
 
         self.straight_high_ace_repeats = [Card("CLUB", 14), Card("DIAMOND", 14),
-                                  Card("HEART", 13), Card("CLUB", 13),
-                                  Card("SPADE", 12),
-                                  Card("DIAMOND", 11), Card("HEART", 10)]
+                                          Card("HEART", 13), Card("CLUB", 13),
+                                          Card("SPADE", 12),
+                                          Card("DIAMOND", 11), Card("HEART", 10)]
+
+        self.straight_low_ace_repeats = [Card("CLUB", 5),
+                                         Card("DIAMOND", 4), Card("HEART", 3),
+                                         Card("HEART", 2), Card("SPADE", 4),
+                                         Card("DIAMOND", 14), Card("HEART", 2)]
+
+        self.straight_low_ace_repeat_once = [Card("CLUB", 5),
+                                             Card("DIAMOND", 4), Card("HEART", 3),
+                                             Card("HEART", 2), Card("SPADE", 10),
+                                             Card("DIAMOND", 14), Card("HEART", 2)]
+
+        self.straight_high_ace_repeat_once = [Card("CLUB", 14), Card("DIAMOND", 14),
+                                              Card("HEART", 13), Card("CLUB", 13),
+                                              Card("SPADE", 12),
+                                              Card("DIAMOND", 11), Card("HEART", 10)]
+
+        self.straight_full_sequence_high_ace = [Card("CLUB", 14), Card("DIAMOND", 13),
+                                                Card("HEART", 12), Card("CLUB", 11),
+                                                Card("SPADE", 10),
+                                                Card("DIAMOND", 9), Card("HEART", 8)]
+
+        self.straight_full_sequence_low_ace = [Card("CLUB", 14), Card("DIAMOND", 2),
+                                               Card("HEART", 3), Card("CLUB", 4),
+                                               Card("SPADE", 5),
+                                               Card("DIAMOND", 6), Card("HEART", 7)]
+
+        self.straight_normal_sequence = [Card("CLUB", 6), Card("DIAMOND", 7),
+                                         Card("HEART", 10), Card("CLUB", 14),
+                                         Card("SPADE", 8),
+                                         Card("DIAMOND", 9), Card("HEART", 11)]
 
         # Full House
-        self.full_house = [Card("CLUB", 8), Card("DIAMOND", 8), Card("HEART", 8),
-                           Card("HEART", 10), Card("SPADE", 10),
-                           Card("DIAMOND", 2), Card("HEART", 5)]
+        self.full_house_base = [Card("CLUB", 8), Card("DIAMOND", 8),
+                                Card("HEART", 8),
+                                Card("HEART", 10), Card("SPADE", 10),
+                                Card("DIAMOND", 2), Card("HEART", 5)]
+
+        self.full_house_second_case = [Card("CLUB", 8), Card("DIAMOND", 8),
+                                       Card("HEART", 8),
+                                       Card("HEART", 10), Card("SPADE", 10),
+                                       Card("DIAMOND", 10), Card("HEART", 5)]
+
+        self.full_house_third_case = [Card("CLUB", 8), Card("DIAMOND", 8),
+                                      Card("HEART", 5),
+                                      Card("HEART", 10), Card("SPADE", 10),
+                                      Card("DIAMOND", 10), Card("HEART", 5)]
 
         # Quads
         self.quads = [Card("CLUB", 10), Card("SPADE", 8), Card("HEART", 4),
@@ -160,6 +201,51 @@ class TestRankHand2(unittest.TestCase):
         self.run_test(hand_of_cards=self.straight_high_ace_repeats,
                       expected_list=expected_list, expected_tier="STRAIGHT")
 
+        print("---------------------------------------------------")
+
+        expected_list = [Card("CLUB", 5), Card("DIAMOND", 4), Card("HEART", 3),
+                         Card("HEART", 2), Card("DIAMOND", 14)]
+
+        self.run_test(hand_of_cards=self.straight_low_ace_repeats,
+                      expected_list=expected_list, expected_tier="STRAIGHT")
+
+        print("---------------------------------------------------")
+
+        self.run_test(hand_of_cards=self.straight_low_ace_repeat_once,
+                      expected_list=expected_list, expected_tier="STRAIGHT")
+
+        expected_list = [Card("CLUB", 14), Card("HEART", 13), Card("SPADE", 12),
+                         Card("DIAMOND", 11), Card("HEART", 10)]
+
+        print("---------------------------------------------------")
+
+        self.run_test(hand_of_cards=self.straight_high_ace_repeat_once,
+                      expected_list=expected_list, expected_tier="STRAIGHT")
+
+        print("-----------------------------------------------------")
+
+        expected_list = [Card("CLUB", 14), Card("DIAMOND", 13), Card("HEART", 12),
+                         Card("CLUB", 11), Card("SPADE", 10)]
+
+        self.run_test(hand_of_cards=self.straight_full_sequence_high_ace,
+                      expected_list=expected_list, expected_tier="STRAIGHT")
+
+        print("-----------------------------------------------------")
+
+        expected_list = [Card("HEART", 7), Card("DIAMOND", 6), Card("SPADE", 5),
+                         Card("CLUB", 4), Card("HEART", 3)]
+
+        self.run_test(hand_of_cards=self.straight_full_sequence_low_ace,
+                      expected_list=expected_list, expected_tier="STRAIGHT")
+
+        print("-----------------------------------------------------")
+
+        expected_list = [Card("HEART", 11), Card("HEART", 10), Card("DIAMOND", 9),
+                         Card("SPADE", 8), Card("DIAMOND", 7)]
+
+        self.run_test(hand_of_cards=self.straight_normal_sequence,
+                      expected_list=expected_list, expected_tier="STRAIGHT")
+
     def test_quads(self):
         expected_list = [Card("CLUB", 10), Card("HEART", 10),
                          Card("SPADE", 10), Card("DIAMOND", 10),
@@ -171,7 +257,19 @@ class TestRankHand2(unittest.TestCase):
         expected_list = [Card("CLUB", 8), Card("DIAMOND", 8), Card("HEART", 8),
                          Card("HEART", 10), Card("SPADE", 10)]
 
-        self.run_test(hand_of_cards=self.full_house, expected_list=expected_list, expected_tier="FULL_HOUSE")
+        self.run_test(hand_of_cards=self.full_house_base, expected_list=expected_list, expected_tier="FULL_HOUSE")
+
+        print("-----------------------------------------------------")
+
+        expected_list = [Card("HEART", 10), Card("SPADE", 10), Card("DIAMOND", 10),
+                         Card("CLUB", 8), Card("DIAMOND", 8)]
+
+        self.run_test(hand_of_cards=self.full_house_second_case, expected_list=expected_list,
+                      expected_tier="FULL_HOUSE")
+
+        print("-----------------------------------------------------")
+
+        self.run_test(hand_of_cards=self.full_house_third_case, expected_list=expected_list, expected_tier="FULL_HOUSE")
 
     def test_straight_flush(self):
         expected_list = [Card("CLUB", 14), Card("CLUB", 13), Card("CLUB", 12),
