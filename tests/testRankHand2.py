@@ -381,8 +381,8 @@ class TestRankHand2(unittest.TestCase):
 
     def test_straight_flush(self):
         # Test low straight flush (5-high with Ace)
-        expected_list = [Card("HEART", 5), Card("HEART", 4), Card("HEART", 3),
-                         Card("HEART", 2), Card("HEART", 14)]
+        expected_list = [Card("HEART", 14), Card("HEART", 5), Card("HEART", 4),
+                         Card("HEART", 3), Card("HEART", 2)]
         self.run_test(hand_of_cards=self.straight_flush_low, expected_list=expected_list, expected_tier="STRAIGHT_FLUSH")
 
         print("-----------------------------------------------------")

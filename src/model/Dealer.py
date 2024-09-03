@@ -212,7 +212,7 @@ class RankHand:
         return self.__check_specific_pair("TRIPS", 3)
 
     def check_two_pair(self):
-        return self.__check_specific_pair("TWO_PAIR", 2, top_two=True)
+        return self.__check_specific_pair("TWO_PAIR", 2)
 
     def check_one_pair(self):
         return self.__check_specific_pair("ONE_PAIR", 2)
@@ -308,12 +308,21 @@ class RankHand:
 
         return None
 
-    def __check_specific_pair(self, hand_tier, count_number, top_two=False):
+    def __check_specific_pair(self, hand_tier, count_number):
         hand_numbers_only = [card.number for card in self.hand]
         rank_counts = Counter(hand_numbers_only)
 
         if count_number in rank_counts.values():
-            return self.__match_value(hand_tier, rank_counts, {count_number: 1})
+            isTwoPair = False
+            if hand_tier == "TWO_PAIR":
+                all_sets_of_two = [number for number, num_occurrence in rank_counts.items() if num_occurrence == 2]
+                isTwoPair = len(all_sets_of_two) == 2 or len(all_sets_of_two) == 3
+                if isTwoPair:
+                    all_sets_of_two = [number for number, num_occurrence in rank_counts.items() if num_occurrence == 2]
+                    rank_counts_mod = {i: 2 for i in all_sets_of_two}
+                    return self.__match_value("TWO_PAIR", rank_counts, {count_number: 2})
+            else:
+                return self.__match_value(hand_tier, rank_counts, {count_number: 1})
         return None, None
 
     def __match_value(self, hand_tier, rank_counts, counts):
