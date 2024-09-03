@@ -85,8 +85,18 @@ class RankHand:
             self.hand = hand
 
     def return_rank_of_hand(self):
-        sequence_of_methods = [self.check_royal_flush, self.check_straight_flush,
-                               self.check_flush, self.check_straight, self.check_pair]
+        sequence_of_methods = [
+            self.check_royal_flush,
+            self.check_straight_flush,
+            self.check_quads,
+            self.check_full_house,
+            self.check_flush,
+            self.check_straight,
+            self.check_trips,
+            self.check_two_pair,
+            self.check_one_pair,
+            self.check_high_card
+        ]
 
         for method in sequence_of_methods:
             tier, best_five = method()
@@ -137,6 +147,110 @@ class RankHand:
 
         return "STRAIGHT_FLUSH", best_five
 
+    def check_quads(self):
+        return self.__check_specific_pair("QUADS", 4)
+
+    def check_full_house(self):
+        hand_numbers_only = [card.number for card in self.hand]
+        rank_counts = Counter(hand_numbers_only)
+        counts = {3: 0, 2: 0}
+
+        for count in rank_counts.values():
+            if count in counts:
+                counts[count] += 1
+
+        if (counts[3] == 1 and counts[2] >= 1) or counts[3] == 2:
+            return self.__match_value("FULL_HOUSE", rank_counts, counts)
+        return None, None
+
+    def check_flush(self):
+
+        flush_suit = self.__check_flush_occurrence()
+
+        if flush_suit is None:
+            return False, []
+
+        suited_cards = self.__return_same_suit(flush_suit=flush_suit)
+
+        best_hand = suited_cards[:5]
+
+        return "FLUSH", best_hand
+
+    def check_straight(self):
+        sequence_cards = self.__return_sequence_cards()
+
+        if sequence_cards is None:
+            return False, []
+
+        card_numbers = [card.number for card in sequence_cards]
+
+        card_numbers_no_dupes = list(set(card_numbers))
+
+        if len(card_numbers_no_dupes) < 5:
+            return False, []
+
+        sequence_cards_no_dupes = []
+        for number in card_numbers_no_dupes:
+            card_to_append = [card for card in sequence_cards if card.number == number][0]
+            sequence_cards_no_dupes.append(card_to_append)
+
+        sequence_cards = sorted(sequence_cards_no_dupes, key=lambda card: card.number, reverse=True)
+
+        first_card = sequence_cards[0]
+        second_card = sequence_cards[1]
+
+        # If the Ace is represented as a 1 instead of a 14, add it to the end of the list when outputting.
+        if first_card.number == 14 and second_card.number != 13:
+            sequence_cards.remove(first_card)
+            sequence_cards.append(first_card)
+
+        best_hand = sequence_cards[:5]
+
+        return "STRAIGHT", best_hand
+
+    def check_trips(self):
+        return self.__check_specific_pair("TRIPS", 3)
+
+    def check_two_pair(self):
+        return self.__check_specific_pair("TWO_PAIR", 2, top_two=True)
+
+    def check_one_pair(self):
+        return self.__check_specific_pair("ONE_PAIR", 2)
+
+    def check_high_card(self):
+        high_cards = sorted(self.hand, key=lambda card: card.number, reverse=True)[:5]
+        return "HIGH_CARD", high_cards
+
+    def check_pair(self):
+        hand_numbers_only = [card.number for card in self.hand]
+        rank_counts = Counter(hand_numbers_only)
+
+        counts = {4: 0, 3: 0, 2: 0}  # Initialize counts for quads, trips, and pairs
+
+        for count in rank_counts.values():
+            if count in counts:
+                counts[count] += 1
+
+        result_pairs = {
+            "QUADS": counts[4] == 1,
+            "FULL_HOUSE": (counts[3] == 1 and counts[2] == 1) or (counts[3] == 2) or
+                          (counts[3] == 1 and counts[2] == 2),
+            "TRIPS": counts[3] == 1 and counts[2] == 0,  # Ensure not full house
+            "TWO_PAIR": counts[2] == 2 or counts[2] == 3,
+            "ONE_PAIR": counts[2] == 1 and counts[3] == 0  # Ensure not full house or trips
+        }
+
+        hand_tier_list = [tier for tier, bool_val in result_pairs.items() if bool_val]
+
+        if len(hand_tier_list) == 0:
+            hand_tier = "HIGH_CARD"
+        else:
+            hand_tier = hand_tier_list[0]
+
+        return self.__match_value(hand_tier=hand_tier, rank_counts=rank_counts, counts=counts)
+
+        # If no pairs, trips, or quads found, return the 5 highest cards
+
     def __return_same_suit(self, flush_suit):
         return sorted([card for card in self.hand if card.suit == flush_suit],
                       key=lambda card: card.number, reverse=True)
@@ -153,19 +267,6 @@ class RankHand:
         else:
             flush_suit = flush_suit_list[0]
             return flush_suit
-
-    def check_flush(self):
-
-        flush_suit = self.__check_flush_occurrence()
-
-        if flush_suit is None:
-            return False, []
-
-        suited_cards = self.__return_same_suit(flush_suit=flush_suit)
-
-        best_hand = suited_cards[:5]
-
-        return "FLUSH", best_hand
 
     def __return_sequence_cards(self):
         # Extract card numbers and remove duplicates
@@ -207,67 +308,13 @@ class RankHand:
 
         return None
 
-    def check_straight(self):
-        sequence_cards = self.__return_sequence_cards()
-
-        if sequence_cards is None:
-            return False, []
-
-        card_numbers = [card.number for card in sequence_cards]
-
-        card_numbers_no_dupes = list(set(card_numbers))
-
-        if len(card_numbers_no_dupes) < 5:
-            return False, []
-
-        sequence_cards_no_dupes = []
-        for number in card_numbers_no_dupes:
-            card_to_append = [card for card in sequence_cards if card.number == number][0]
-            sequence_cards_no_dupes.append(card_to_append)
-
-        sequence_cards = sorted(sequence_cards_no_dupes, key=lambda card: card.number, reverse=True)
-
-        first_card = sequence_cards[0]
-        second_card = sequence_cards[1]
-
-        # If the Ace is represented as a 1 instead of a 14, add it to the end of the list when outputting.
-        if first_card.number == 14 and second_card.number != 13:
-            sequence_cards.remove(first_card)
-            sequence_cards.append(first_card)
-
-        best_hand = sequence_cards[:5]
-
-        return "STRAIGHT", best_hand
-
-    def check_pair(self):
+    def __check_specific_pair(self, hand_tier, count_number, top_two=False):
         hand_numbers_only = [card.number for card in self.hand]
         rank_counts = Counter(hand_numbers_only)
 
-        counts = {4: 0, 3: 0, 2: 0}  # Initialize counts for quads, trips, and pairs
-
-        for count in rank_counts.values():
-            if count in counts:
-                counts[count] += 1
-
-        result_pairs = {
-            "QUADS": counts[4] == 1,
-            "FULL_HOUSE": (counts[3] == 1 and counts[2] == 1) or (counts[3] == 2) or
-                          (counts[3] == 1 and counts[2] == 2),
-            "TRIPS": counts[3] == 1 and counts[2] == 0,  # Ensure not full house
-            "TWO_PAIR": counts[2] == 2 or counts[2] == 3,
-            "ONE_PAIR": counts[2] == 1 and counts[3] == 0  # Ensure not full house or trips
-        }
-
-        hand_tier_list = [tier for tier, bool_val in result_pairs.items() if bool_val]
-
-        if len(hand_tier_list) == 0:
-            hand_tier = "HIGH_CARD"
-        else:
-            hand_tier = hand_tier_list[0]
-
-        return self.__match_value(hand_tier=hand_tier, rank_counts=rank_counts, counts=counts)
-
-        # If no pairs, trips, or quads found, return the 5 highest cards
+        if count_number in rank_counts.values():
+            return self.__match_value(hand_tier, rank_counts, {count_number: 1})
+        return None, None
 
     def __match_value(self, hand_tier, rank_counts, counts):
         match hand_tier:

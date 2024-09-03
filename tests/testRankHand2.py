@@ -84,6 +84,32 @@ class TestRankHand2(unittest.TestCase):
                                          Card("SPADE", 8),
                                          Card("DIAMOND", 9), Card("HEART", 11)]
 
+        # Flush
+        self.flush_base = [Card("DIAMOND", 11), Card("DIAMOND", 5),
+                           Card("HEART", 3),
+                           Card("DIAMOND", 14), Card("SPADE", 8),
+                           Card("DIAMOND", 12), Card("DIAMOND", 11)]
+
+        self.flush_six = [Card("DIAMOND", 11), Card("DIAMOND", 5),
+                          Card("HEART", 3),
+                          Card("DIAMOND", 14), Card("DIAMOND", 8),
+                          Card("DIAMOND", 12), Card("DIAMOND", 11)]
+
+        self.flush_seven = [Card("DIAMOND", 11), Card("DIAMOND", 5),
+                            Card("DIAMOND", 3),
+                            Card("DIAMOND", 14), Card("DIAMOND", 8),
+                            Card("DIAMOND", 12), Card("DIAMOND", 11)]
+
+        self.flush_dupes_off_suit = [Card("DIAMOND", 11), Card("DIAMOND", 5),
+                                     Card("HEART", 3),
+                                     Card("DIAMOND", 14), Card("HEART", 3),
+                                     Card("DIAMOND", 2), Card("DIAMOND", 11)]
+
+        self.flush_dupes_off_suit_2 = [Card("DIAMOND", 11), Card("DIAMOND", 5),
+                                       Card("HEART", 3),
+                                       Card("DIAMOND", 14), Card("DIAMOND", 6),
+                                       Card("DIAMOND", 11), Card("HEART", 11)]
+
         # Full House
         self.full_house_base = [Card("CLUB", 8), Card("DIAMOND", 8),
                                 Card("HEART", 8),
@@ -110,12 +136,45 @@ class TestRankHand2(unittest.TestCase):
                                Card("CLUB", 5), Card("CLUB", 4),
                                Card("DIAMOND", 2), Card("HEART", 5)]
 
+        self.straight_flush_low = [Card("HEART", 5), Card("HEART", 4), Card("HEART", 3),
+                                   Card("HEART", 2), Card("HEART", 14),
+                                   Card("CLUB", 10), Card("SPADE", 7)]
+
+        self.straight_flush_high = [Card("SPADE", 13), Card("SPADE", 12), Card("SPADE", 11),
+                                    Card("SPADE", 10), Card("SPADE", 9),
+                                    Card("CLUB", 8), Card("DIAMOND", 7)]
+
+        self.straight_flush_with_pair = [Card("DIAMOND", 8), Card("DIAMOND", 7), Card("DIAMOND", 6),
+                                         Card("DIAMOND", 5), Card("DIAMOND", 4),
+                                         Card("HEART", 8), Card("CLUB", 2)]
+
+        self.straight_flush_seven_cards = [Card("CLUB", 9), Card("CLUB", 8), Card("CLUB", 7),
+                                           Card("CLUB", 6), Card("CLUB", 5),
+                                           Card("CLUB", 4), Card("CLUB", 3)]
+
+        self.straight_flush_with_higher_flush = [Card("HEART", 8), Card("HEART", 7), Card("HEART", 6),
+                                                 Card("HEART", 5), Card("HEART", 4),
+                                                 Card("SPADE", 14), Card("SPADE", 13)]
+
         # Royal Flush
         self.royal_flush = [Card("CLUB", 14), Card("CLUB", 13), Card("CLUB", 12),
                             Card("CLUB", 11), Card("CLUB", 10),
                             Card("DIAMOND", 2), Card("HEART", 5)]
 
-    def test_card_equality(self, expected_card_list, actual_card_list):
+        # Royal Flush edge cases
+        self.royal_flush_with_straight = [Card("DIAMOND", 14), Card("DIAMOND", 13), Card("DIAMOND", 12),
+                                          Card("DIAMOND", 11), Card("DIAMOND", 10),
+                                          Card("HEART", 9), Card("CLUB", 8)]
+
+        self.royal_flush_with_flush = [Card("SPADE", 14), Card("SPADE", 13), Card("SPADE", 12),
+                                       Card("SPADE", 11), Card("SPADE", 10),
+                                       Card("SPADE", 9), Card("SPADE", 8)]
+
+        self.royal_flush_with_full_house = [Card("CLUB", 14), Card("CLUB", 13), Card("CLUB", 12),
+                                            Card("CLUB", 11), Card("CLUB", 10),
+                                            Card("HEART", 14), Card("SPADE", 14)]
+
+    def check_card_equality(self, expected_card_list, actual_card_list):
 
         for i in range(len(expected_card_list)):
             expected_card = expected_card_list[i]
@@ -134,9 +193,11 @@ class TestRankHand2(unittest.TestCase):
             print("CARD_NUM", card.number)
             print("CARD_SUIT", card.suit)
 
+        print(len(best_five))
+
         self.assertEqual(tier, expected_tier)
 
-        self.assertTrue(self.test_card_equality(expected_list, best_five))
+        self.assertTrue(self.check_card_equality(expected_list, best_five))
 
     def test_high_card(self):
         expected_list = [Card("HEART", 11), Card("HEART", 10),
@@ -150,6 +211,8 @@ class TestRankHand2(unittest.TestCase):
                          Card("HEART", 10), Card("CLUB", 7)]
 
         self.run_test(hand_of_cards=self.one_pair, expected_list=expected_list, expected_tier="ONE_PAIR")
+
+        print("------------------------------------------")
 
         expected_list = [Card("CLUB", 14), Card("SPADE", 14), Card("HEART", 11),
                          Card("HEART", 10), Card("CLUB", 7)]
@@ -246,6 +309,51 @@ class TestRankHand2(unittest.TestCase):
         self.run_test(hand_of_cards=self.straight_normal_sequence,
                       expected_list=expected_list, expected_tier="STRAIGHT")
 
+    def test_flush(self):
+        expected_list = [Card("DIAMOND", 14), Card("DIAMOND", 12),
+                         Card("DIAMOND", 11),
+                         Card("DIAMOND", 11), Card("DIAMOND", 5)]
+
+        self.run_test(hand_of_cards=self.flush_base, expected_list=expected_list, expected_tier="FLUSH")
+
+        print("-----------------------------------------------------")
+
+        expected_list = [Card("DIAMOND", 14), Card("DIAMOND", 12),
+                         Card("DIAMOND", 11),
+                         Card("DIAMOND", 11), Card("DIAMOND", 8)]
+
+        self.run_test(hand_of_cards=self.flush_six, expected_list=expected_list, expected_tier="FLUSH")
+
+        print("-----------------------------------------------------")
+
+        expected_list = [Card("DIAMOND", 14), Card("DIAMOND", 12),
+                         Card("DIAMOND", 11),
+                         Card("DIAMOND", 11), Card("DIAMOND", 8)]
+
+        self.run_test(hand_of_cards=self.flush_six, expected_list=expected_list, expected_tier="FLUSH")
+
+        print("-----------------------------------------------------")
+
+        self.run_test(hand_of_cards=self.flush_seven, expected_list=expected_list, expected_tier="FLUSH")
+
+        print("-----------------------------------------------------")
+
+        expected_list = [Card("DIAMOND", 14), Card("DIAMOND", 11),
+                         Card("DIAMOND", 11),
+                         Card("DIAMOND", 5), Card("DIAMOND", 2)]
+
+        self.run_test(hand_of_cards=self.flush_dupes_off_suit, expected_list=expected_list, expected_tier="FLUSH")
+
+        print("-----------------------------------------------------")
+
+        expected_list = [Card("DIAMOND", 14), Card("DIAMOND", 11),
+                         Card("DIAMOND", 11),
+                         Card("DIAMOND", 6), Card("DIAMOND", 5)]
+
+        self.run_test(hand_of_cards=self.flush_dupes_off_suit_2, expected_list=expected_list, expected_tier="FLUSH")
+
+        print("-----------------------------------------------------")
+
     def test_quads(self):
         expected_list = [Card("CLUB", 10), Card("HEART", 10),
                          Card("SPADE", 10), Card("DIAMOND", 10),
@@ -272,7 +380,55 @@ class TestRankHand2(unittest.TestCase):
         self.run_test(hand_of_cards=self.full_house_third_case, expected_list=expected_list, expected_tier="FULL_HOUSE")
 
     def test_straight_flush(self):
+        # Test low straight flush (5-high with Ace)
+        expected_list = [Card("HEART", 5), Card("HEART", 4), Card("HEART", 3),
+                         Card("HEART", 2), Card("HEART", 14)]
+        self.run_test(hand_of_cards=self.straight_flush_low, expected_list=expected_list, expected_tier="STRAIGHT_FLUSH")
+
+        print("-----------------------------------------------------")
+
+        # Test high straight flush (King-high)
+        expected_list = [Card("SPADE", 13), Card("SPADE", 12), Card("SPADE", 11),
+                         Card("SPADE", 10), Card("SPADE", 9)]
+        self.run_test(hand_of_cards=self.straight_flush_high, expected_list=expected_list, expected_tier="STRAIGHT_FLUSH")
+
+        print("-----------------------------------------------------")
+
+        # Test straight flush with a pair
+        expected_list = [Card("DIAMOND", 8), Card("DIAMOND", 7), Card("DIAMOND", 6),
+                         Card("DIAMOND", 5), Card("DIAMOND", 4)]
+        self.run_test(hand_of_cards=self.straight_flush_with_pair, expected_list=expected_list, expected_tier="STRAIGHT_FLUSH")
+
+        print("-----------------------------------------------------")
+
+        # Test straight flush with seven cards in sequence
+        expected_list = [Card("CLUB", 9), Card("CLUB", 8), Card("CLUB", 7),
+                         Card("CLUB", 6), Card("CLUB", 5)]
+        self.run_test(hand_of_cards=self.straight_flush_seven_cards, expected_list=expected_list, expected_tier="STRAIGHT_FLUSH")
+
+        print("-----------------------------------------------------")
+
+        # Test straight flush with higher flush available
+        expected_list = [Card("HEART", 8), Card("HEART", 7), Card("HEART", 6),
+                         Card("HEART", 5), Card("HEART", 4)]
+        self.run_test(hand_of_cards=self.straight_flush_with_higher_flush, expected_list=expected_list, expected_tier="STRAIGHT_FLUSH")
+
+    def test_royal_flush(self):
+        # Test royal flush with straight
+        expected_list = [Card("DIAMOND", 14), Card("DIAMOND", 13), Card("DIAMOND", 12),
+                         Card("DIAMOND", 11), Card("DIAMOND", 10)]
+        self.run_test(hand_of_cards=self.royal_flush_with_straight, expected_list=expected_list, expected_tier="ROYAL_FLUSH")
+
+        print("-----------------------------------------------------")
+
+        # Test royal flush with flush
+        expected_list = [Card("SPADE", 14), Card("SPADE", 13), Card("SPADE", 12),
+                         Card("SPADE", 11), Card("SPADE", 10)]
+        self.run_test(hand_of_cards=self.royal_flush_with_flush, expected_list=expected_list, expected_tier="ROYAL_FLUSH")
+
+        print("-----------------------------------------------------")
+
+        # Test royal flush with full house
         expected_list = [Card("CLUB", 14), Card("CLUB", 13), Card("CLUB", 12),
                          Card("CLUB", 11), Card("CLUB", 10)]
-
-        self.run_test(hand_of_cards=self.royal_flush, expected_list=expected_list, expected_tier="ROYAL_FLUSH")
+        self.run_test(hand_of_cards=self.royal_flush_with_full_house, expected_list=expected_list, expected_tier="ROYAL_FLUSH")
