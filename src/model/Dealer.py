@@ -25,6 +25,18 @@ def shuffle_deck(deck):
 class Dealer:
 
     def __init__(self, current_players: List[Player]):
+        self.poker_rankings = {
+            "ROYAL_FLUSH": 9,
+            "STRAIGHT_FLUSH": 8,
+            "QUADS": 7,
+            "FULL_HOUSE": 6,
+            "FLUSH": 5,
+            "STRAIGHT": 4,
+            "TRIPS": 3,
+            "TWO_PAIR": 2,
+            "ONE_PAIR": 1,
+            "HIGH_CARD": 0
+        }
         self.current_players = current_players
         self.deck_of_cards = create_deck()
         self.river = []
@@ -61,21 +73,61 @@ class Dealer:
         for player in self.current_players:
             player.hand.append(card)
 
+    def determine_winner(self):
+        if len(self.current_players) == 1:
+            player = self.current_players[0]
+            return [f"Player: {player.name} won the hand!"]
+
+        # The higher the index, the better value the hand holds.
+        poker_rankings = self.poker_rankings
+
+        player_hands = []
+        highest_rank = -1
+
+        for player in self.current_players:
+            ranker = RankHand(player.hand)
+            tier, best_five = ranker.return_rank_of_hand()
+            rank = poker_rankings[tier]
+            player_hands.append((player, rank, best_five))
+            highest_rank = max(highest_rank, rank)
+
+        # Filter to only the highest ranking hands
+        top_hands = [ph for ph in player_hands if ph[1] == highest_rank]
+
+        # If there's only one top hand, we have a winner
+        if len(top_hands) == 1:
+            winner = top_hands[0][0]
+            return self.print_winner_hand(winners=winner, highest_rank=highest_rank)
+        # If we're here, we need to break a tie
+        winners = self.break_tie(top_hands)
+
+        if len(winners) == 1:
+            return self.print_winner_hand(winners=winners[0], highest_rank=highest_rank)
+        else:
+            return self.print_winner_hand(winners=winners, highest_rank=highest_rank, is_chop=True)
+
+    def break_tie(self, tied_hands):
+        # Compare the best five cards of each hand
+        for i in range(5):
+            highest_card = max(hand[2][i].number for hand in tied_hands)
+            still_tied = [hand for hand in tied_hands if hand[2][i].number == highest_card]
+            if len(still_tied) == 1:
+                return [still_tied[0][0]]  # Return the player who won
+            tied_hands = still_tied
+
+        # If we're here, all five cards were the same
+        return [hand[0] for hand in tied_hands]  # Return all players who are still tied
+
+    def print_winner_hand(self, winners, highest_rank, is_chop=False):
+        poker_rankings = self.poker_rankings
+        if not is_chop:
+            return [f"Player: {winners.name} won the hand with "
+                    f"{list(poker_rankings.keys())[list(poker_rankings.values()).index(highest_rank)]}!"]
+        else:
+            return [f"Players: {', '.join([w.name for w in winners])} tied and split the pot!"]
+
 
 class RankHand:
-    # The higher the index, the better value the hand holds.
-    poker_rankings = {
-        "ROYAL_FLUSH": 9,
-        "STRAIGHT_FLUSH": 8,
-        "QUADS": 7,
-        "FLUSH": 6,
-        "STRAIGHT": 5,
-        "TRIPS": 4,
-        "TWO_PAIR": 3,
-        "ONE_PAIR": 2,
-        "HIGH_CARD": 1
-    }
-
     def __init__(self, hand: List[Card]):
 
         if len(hand) != 7:
