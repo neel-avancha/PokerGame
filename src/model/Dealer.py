@@ -40,6 +40,7 @@ class Dealer:
         self.current_players = current_players
         self.deck_of_cards = create_deck()
         self.river = []
+        self.winners = None
 
     def update_current_players(self, current_players):
         self.current_players = current_players
@@ -76,6 +77,7 @@ class Dealer:
     def determine_winner(self):
         if len(self.current_players) == 1:
             player = self.current_players[0]
+            self.winners = player.name
             return [f"Player: {player.name} won the hand!"]
 
         # The higher the index, the better value the hand holds.
@@ -97,13 +99,15 @@ class Dealer:
         # If there's only one top hand, we have a winner
         if len(top_hands) == 1:
             winner = top_hands[0][0]
+            self.winners = winner.name
             return self.print_winner_hand(winners=winner, highest_rank=highest_rank)
         # If we're here, we need to break a tie
         winners = self.break_tie(top_hands)
-
         if len(winners) == 1:
+            self.winners = winners[0].name
             return self.print_winner_hand(winners=winners[0], highest_rank=highest_rank)
         else:
+            self.winners = [winner.name for winner in winners]
             return self.print_winner_hand(winners=winners, highest_rank=highest_rank, is_chop=True)
 
     def break_tie(self, tied_hands):

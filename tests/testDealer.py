@@ -8,6 +8,7 @@ from src.model.Player import *
 class TestRankHand2(unittest.TestCase):
 
     def setUp(self):
+        # Example One
         self.no_pair = [Card("CLUB", 8), Card("CLUB", 6), Card("CLUB", 11),
                         Card("HEART", 10), Card("SPADE", 9),
                         Card("CLUB", 14),
@@ -34,7 +35,7 @@ class TestRankHand2(unittest.TestCase):
 
         bill = Player("Bill", 10000)
 
-        winner = Player("Winner", 10000)
+        dave = Player("Winner", 10000)
 
         bob.assign_hand(self.no_pair)
 
@@ -42,64 +43,63 @@ class TestRankHand2(unittest.TestCase):
 
         bill.assign_hand(self.one_pair)
 
-        winner.assign_hand(self.flush)
+        dave.assign_hand(self.flush)
 
-        self.player_list_1 = [bob, sam, bill, winner]
+        self.player_list_1 = [bob, sam, bill, dave]
 
         # Case 2
         self.player_list_2 = [bob]
 
-    def test_base_case_dealer(self):
+        # Case 3
+        river = [Card("DIAMOND", 14), Card("DIAMOND", 6), Card("DIAMOND", 7),
+                 Card("DIAMOND", 11), Card("DIAMOND", 12)]
+
+        bob = Player("Bob", 10000)
+        bob_hand = [Card("DIAMOND", 5), Card("HEART", 10)]
+        bob.assign_hand(river+bob_hand)
+
+        sam = Player("Sam", 10000)
+        sam_hand = [Card("HEART", 5), Card("HEART", 10)]
+        sam.assign_hand(river+sam_hand)
+
+        bill = Player("Bill", 10000)
+        bill_hand = [Card("HEART", 14), Card("CLUB", 14)]
+        bill.assign_hand(river+bill_hand)
+
+        dave = Player("Dave", 10000)
+        dave_hand = [Card("DIAMOND", 4), Card("CLUB", 10)]
+        dave.assign_hand(river+dave_hand)
+
+        self.player_list_3 = [bob, sam, bill, dave]
+
+        winner = Player("Winner", 10000)
+        winner_hand = [Card("DIAMOND", 13), Card("HEART", 9)]
+        winner.assign_hand(river + dave_hand)
+        winner.assign_hand(river+winner_hand)
+
+        self.player_list_4 = [bob, sam, bill, dave, winner]
+
+
+
+
+    def test_base_case(self):
         dealer = Dealer(current_players=self.player_list_2)
+        dealer.determine_winner()
+        self.assertEqual(dealer.winners, "Bob")
 
-        val = dealer.determine_winner()
-
-        print(val)
-
-    def test_basic_case_dealer(self):
+    def test_one_winner_case(self):
         dealer = Dealer(current_players=self.player_list_1)
+        dealer.determine_winner()
+        self.assertEqual(dealer.winners, "Winner")
 
-        val = dealer.determine_winner()
-        print(val)
+    def test_multiple_winner_case(self):
+        dealer = Dealer(current_players=self.player_list_3)
+        dealer.determine_winner()
+        self.assertEqual(dealer.winners, ['Bob', 'Sam', 'Bill', 'Dave'])
 
-
-
-
-
-    # def determine_winner(self):
-    #     if len(self.current_players) == 1:
-    #         player = self.current_players[0]
-    #         return [f"Player: {player.name} won the hand!"]
-    #
-    #     # The higher the index, the better value the hand holds.
-    #     poker_rankings = self.poker_rankings
-    #
-    #     player_hands = []
-    #     highest_rank = -1
-    #
-    #     for player in self.current_players:
-    #         ranker = RankHand(player.hand)
-    #         tier, best_five = ranker.return_rank_of_hand()
-    #         rank = poker_rankings[tier]
-    #         player_hands.append((player, rank, best_five))
-    #         highest_rank = max(highest_rank, rank)
-    #
-    #     # Filter to only the highest ranking hands
-    #     top_hands = [ph for ph in player_hands if ph[1] == highest_rank]
-    #
-    #     # If there's only one top hand, we have a winner
-    #     if len(top_hands) == 1:
-    #         winner = top_hands[0][0]
-    #         return [
-    #             f"Player: {winner.name} won the hand with "
-    #             f"{list(poker_rankings.keys())[list(poker_rankings.values()).index(highest_rank)]}!"]
-    #
-    #     # If we're here, we need to break a tie
-    #     winners = self.break_tie(top_hands)
-    #
-    #     if len(winners) == 1:
-    #         return [f"Player: {winners[0].name} won the hand after tiebreak!"]
-    #     else:
-    #         return [f"Players: {', '.join([w.name for w in winners])} tied and split the pot!"]
+    def test_break_tie_case(self):
+        dealer = Dealer(current_players=self.player_list_4)
+        dealer.determine_winner()
+        self.assertEqual(dealer.winners, "Winner")
 
 
